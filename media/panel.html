@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline';">
+<style>
+  :root { 
+    --bg: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 100%); 
+    --fg: #e8e8f2; 
+    --muted: #a0a0b5; 
+    --border: rgba(255,255,255,0.12); 
+    --panel: rgba(255,255,255,0.03); 
+    --accent: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); 
+    --accent-hover: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); 
+    --error: #ef4444; 
+    --success: #10b981;
+    --card-bg: rgba(255,255,255,0.05);
+    --input-bg: rgba(255,255,255,0.08);
+    --shadow: 0 4px 20px rgba(0,0,0,0.3);
+    --shadow-sm: 0 2px 8px rgba(0,0,0,0.2);
+  }
+  
+  * { box-sizing: border-box; }
+  
+  body { 
+    background: var(--bg); 
+    color: var(--fg); 
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', sans-serif; 
+    padding: 20px; 
+    margin: 0; 
+    min-height: 100vh;
+    line-height: 1.6;
+    backdrop-filter: blur(10px);
+  }
+  
+  h3 { 
+    margin: 0 0 24px 0; 
+    font-size: 24px; 
+    font-weight: 700; 
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+  }
+  
+  label { 
+    display: block; 
+    margin-top: 16px; 
+    font-weight: 600; 
+    font-size: 14px;
+    letter-spacing: 0.025em;
+    color: var(--fg);
+  }
+  
+  .inline { 
+    display: flex; 
+    gap: 12px; 
+    align-items: center; 
+  }
+  
+  .inline input { 
+    flex: 1 1 auto; 
+  }
+  
+  input {
+    width: 100%; 
+    margin-top: 8px; 
+    padding: 12px 16px;
+    border: 1px solid var(--border); 
+    border-radius: 10px; 
+    background: var(--input-bg); 
+    color: var(--fg);
+    font-size: 14px;
+    transition: all 0.2s ease;
+    backdrop-filter: blur(10px);
+    box-shadow: var(--shadow-sm);
+  }
+  
+  input:focus {
+    outline: none;
+    border-color: #6366f1;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    transform: translateY(-1px);
+  }
+  
+  input::placeholder {
+    color: var(--muted);
+  }
+  
+  .row { 
+    display: flex; 
+    gap: 16px; 
+    margin-top: 12px; 
+  }
+  
+  .row > div { 
+    flex: 1; 
+  }
+  
+  .btns { 
+    display: flex; 
+    gap: 12px; 
+    flex-wrap: wrap; 
+    margin-top: 20px; 
+  }
+  
+  button {
+    padding: 12px 20px; 
+    background: var(--accent); 
+    color: #fff; 
+    border: none;
+    border-radius: 10px; 
+    cursor: pointer; 
+    font-weight: 600;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    box-shadow: var(--shadow-sm);
+    letter-spacing: 0.025em;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s;
+  }
+  
+  button:hover {
+    background: var(--accent-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 25px rgba(99, 102, 241, 0.4);
+  }
+  
+  button:hover::before {
+    left: 100%;
+  }
+  
+  button:active {
+    transform: translateY(0);
+  }
+  
+  button[disabled] { 
+    opacity: 0.4; 
+    cursor: not-allowed; 
+    transform: none !important;
+    box-shadow: var(--shadow-sm) !important;
+  }
+  
+  .mini { 
+    padding: 8px 14px; 
+    background: rgba(255,255,255,0.1); 
+    font-size: 12px;
+    backdrop-filter: blur(10px);
+  }
+  
+  .mini:hover { 
+    background: rgba(255,255,255,0.2); 
+    box-shadow: var(--shadow-sm);
+  }
+  
+  .error { 
+    color: var(--error); 
+    font-weight: 600; 
+    margin-top: 12px; 
+    padding: 12px;
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    border-radius: 8px;
+    backdrop-filter: blur(10px);
+  }
+  
+  .group { 
+    padding: 16px 0; 
+    border-bottom: 1px solid rgba(255,255,255,0.08); 
+    margin-bottom: 8px;
+  }
+  
+  pre { 
+    white-space: pre-wrap; 
+    background: var(--card-bg); 
+    padding: 16px; 
+    border-radius: 10px; 
+    margin: 8px 0 0 0; 
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-sm);
+    font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+    font-size: 13px;
+    line-height: 1.5;
+    backdrop-filter: blur(10px);
+  }
+  
+  .ai { 
+    margin-top: 24px; 
+    padding: 20px; 
+    border: 1px solid var(--border); 
+    border-radius: 16px; 
+    background: var(--card-bg);
+    box-shadow: var(--shadow);
+    backdrop-filter: blur(20px);
+  }
+  
+  .ai-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  
+  .ai-icon {
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 12px;
+    color: white;
+  }
+  
+  #aiBody { 
+    line-height: 1.7;
+    font-size: 14px;
+  }
+  
+  #aiBody h1, #aiBody h2, #aiBody h3 {
+    color: var(--fg);
+    margin: 20px 0 12px 0;
+    font-weight: 600;
+  }
+  
+  #aiBody h1 { font-size: 18px; }
+  #aiBody h2 { font-size: 16px; }
+  #aiBody h3 { font-size: 15px; }
+  
+  #aiBody ul, #aiBody ol {
+    margin: 12px 0;
+    padding-left: 20px;
+  }
+  
+  #aiBody li {
+    margin: 8px 0;
+    color: var(--fg);
+  }
+  
+  #aiBody strong, #aiBody b {
+    color: var(--fg);
+    font-weight: 600;
+  }
+  
+  #aiBody code {
+    background: rgba(255,255,255,0.15);
+    padding: 3px 6px;
+    border-radius: 4px;
+    font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+    font-size: 13px;
+    color: #e8e8f2;
+  }
+  
+  #aiBody pre {
+    background: rgba(255,255,255,0.08);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    margin: 12px 0;
+    overflow-x: auto;
+    font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+    font-size: 13px;
+  }
+  
+  .ai-section {
+    margin: 16px 0;
+    padding: 12px;
+    background: rgba(255,255,255,0.03);
+    border-radius: 8px;
+    border-left: 3px solid #6366f1;
+  }
+  
+  .summary { 
+    margin-top: 16px; 
+    color: var(--muted); 
+    font-size: 13px; 
+    padding: 12px;
+    background: var(--panel);
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    backdrop-filter: blur(10px);
+  }
+  
+  .hint { 
+    font-size: 13px; 
+    color: var(--muted); 
+    margin-top: 16px; 
+    padding: 16px;
+    background: var(--panel);
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    line-height: 1.5;
+    backdrop-filter: blur(10px);
+  }
+  
+  input[type="checkbox"] {
+    width: auto; 
+    margin: 0 8px 0 0;
+    accent-color: #6366f1;
+    transform: scale(1.1);
+  }
+  
+  code {
+    background: rgba(255,255,255,0.1);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+  }
+</style>
+</head>
+<body>
+
+<h3>ALF Log Analysis (ALFana)</h3>
+
+<!-- Base URL -->
+<label>ALF Base URL</label>
+<div class="inline">
+  <input id="alfBase" value="https://unified.loggingfacility.amadeus.com/" placeholder="https://unified.loggingfacility.amadeus.com/"/>
+  <button class="mini" data-paste="alfBase">Paste</button>
+</div>
+
+<!-- Credentials -->
+<div class="row">
+  <div>
+    <label>Username</label>
+    <div class="inline">
+      <input id="alfUser" value="MUCMSPDOM\" placeholder="MUCMSPDOM\psraok"/>
+      <button class="mini" data-paste="alfUser">Paste</button>
+    </div>
+  </div>
+  <div>
+    <label>Password</label>
+    <div class="inline">
+      <input id="alfPass" type="password" placeholder="••••••••"/>
+      <button class="mini" data-paste="alfPass">Paste</button>
+    </div>
+  </div>
+</div>
+
+<div class="inline" style="margin-top:8px;">
+  <input type="checkbox" id="rememberPwd" style="width:auto; margin:0;">
+  <label for="rememberPwd" style="margin:0; font-weight:400;">Remember password (stored securely in VS Code)</label>
+</div>
+
+<div class="btns">
+  <button id="btnLogin">Login</button>
+</div>
+
+<!-- Search ID -->
+<label>Search ID</label>
+<div class="inline">
+  <input id="alfSearchId" placeholder="504596883298250"/>
+  <button class="mini" data-paste="alfSearchId">Paste</button>
+</div>
+
+<div class="btns">
+  <button id="btnFetchResult">Fetch Result</button>
+  <button id="btnAI" disabled>Explain with AI</button>
+</div>
+
+<div class="summary" id="summary" style="display:none;"></div>
+
+<!-- Output -->
+<div id="err" class="error" style="display:none;"></div>
+<div id="out" style="margin-top:12px;"></div>
+
+<!-- AI -->
+<div class="ai" id="ai" style="display:none;">
+  <div class="ai-header">
+    <div class="ai-icon">AI</div>
+    <div><b>Analysis Summary</b></div>
+  </div>
+  <div id="aiBody"></div>
+</div>
+
+<div class="hint">Defaults: base URL, username, and last search ID are remembered automatically. Password is only stored if “Remember password” is checked.</div>
+
+<script>
+  const vscode = acquireVsCodeApi();
+  const qs = id => document.getElementById(id);
+
+  const err = qs('err');
+  const out = qs('out');
+  const ai = qs('ai');
+  const aiBody = qs('aiBody');
+  const summary = qs('summary');
+  const btnAI = qs('btnAI');
+
+  function showError(m){ err.textContent = m || 'Unknown error'; err.style.display='block'; }
+  function hideError(){ err.style.display = 'none'; }
+  function enableAI(enabled){ btnAI.disabled = !enabled; }
+
+  // Robust Paste (host first, fallback to navigator)
+  const pending = new Map();
+  document.querySelectorAll('button[data-paste]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const target = btn.getAttribute('data-paste');
+      const t = setTimeout(async () => {
+        try {
+          const clip = await navigator.clipboard.readText();
+          if (clip) injectText(target, clip); else showError('Clipboard is empty.');
+        } catch { showError('Clipboard access denied. Copy text first, then click Paste.'); }
+      }, 600);
+      pending.set(target, t);
+      vscode.postMessage({ type: 'read-clipboard', target });
+    });
+  });
+
+  function injectText(target, text){
+    const el = document.getElementById(target);
+    if (!el) return;
+    el.value = text || '';
+    el.focus();
+    if (el.select) el.select();
+  }
+
+  // Prefill from host
+  window.addEventListener('message', (e) => {
+    const { type, defaults, password, target, text, payload, message, markdown } = e.data || {};
+
+    if (type === 'prefill') {
+      if (defaults?.baseUrl) qs('alfBase').value = defaults.baseUrl;
+      if (defaults?.username) qs('alfUser').value = defaults.username;
+      if (defaults?.lastSearchId) qs('alfSearchId').value = defaults.lastSearchId;
+      qs('rememberPwd').checked = !!defaults?.rememberPassword;
+      if (defaults?.rememberPassword && password) qs('alfPass').value = password;
+      return;
+    }
+
+    if (type === 'clipboard' || type === 'clipboard-error') {
+      const timer = pending.get(target);
+      if (timer) { clearTimeout(timer); pending.delete(target); }
+      if (type === 'clipboard') injectText(target, text || '');
+      else showError('Clipboard read failed in host: ' + (message || ''));
+      return;
+    }
+
+    if (type === 'error') { showError(message); return; }
+
+    if (type === 'analysis-done') {
+      ai.style.display = 'none';
+      const groups = payload.groups || [];
+      summary.textContent = `Grouped ${groups.length} error clusters.`;
+      summary.style.display = 'block';
+      enableAI(groups.length > 0);
+
+      if (!groups.length) { out.innerHTML = '<p>No ERROR/FATAL groups found.</p>'; return; }
+
+      out.innerHTML = groups.slice(0, 20).map((g, i) => {
+        const sample = g.samples?.[0] || {};
+        const msg = sample.msg || '';
+        const frame = g.topFrame || 'n/a';
+        return `
+          <div class="group">
+            <b>#${i+1}</b> × ${g.count}<br/>
+            Top frame: <code>${escapeHtml(frame)}</code>
+            <pre>${escapeHtml(msg)}</pre>
+          </div>`;
+      }).join('');
+      return;
+    }
+
+    if (type === 'ai-summary') {
+      ai.style.display = 'block';
+      aiBody.innerHTML = formatAIResponse(markdown || '(empty)');
+      enableAI(true);
+      return;
+    }
+  });
+
+  // Login
+  qs('btnLogin').onclick = async () => {
+    hideError(); enableAI(false);
+
+    // Save defaults + (maybe) password first
+    vscode.postMessage({
+      type:'save-defaults',
+      baseUrl: qs('alfBase').value.trim(),
+      username: qs('alfUser').value.trim(),
+      lastSearchId: qs('alfSearchId').value.trim(),
+      rememberPassword: qs('rememberPwd').checked,
+      password: qs('alfPass').value
+    });
+
+    vscode.postMessage({
+      type:'alf-login',
+      baseUrl: qs('alfBase').value.trim(),
+      username: qs('alfUser').value.trim(),
+      password: qs('alfPass').value
+    });
+  };
+
+  // Fetch Result by Search ID
+  qs('btnFetchResult').onclick = () => {
+    hideError(); enableAI(false);
+
+    // Persist last search id (so next time it’s pre-filled)
+    vscode.postMessage({
+      type:'save-last-search-id',
+      searchId: qs('alfSearchId').value.trim()
+    });
+
+    vscode.postMessage({
+      type:'alf-fetch-result',
+      searchId: qs('alfSearchId').value.trim()
+    });
+  };
+
+  // Explain with AI
+  qs('btnAI').onclick = () => {
+    hideError();
+    vscode.postMessage({ type:'explain-with-ai' });
+  };
+
+  // Remember password toggle saves/clears secret
+  qs('rememberPwd').addEventListener('change', () => {
+    vscode.postMessage({
+      type: 'save-password',
+      rememberPassword: qs('rememberPwd').checked,
+      password: qs('alfPass').value
+    });
+  });
+
+  // Enable keyboard shortcuts with VS Code clipboard integration
+  document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('input').forEach(input => {
+      input.addEventListener('keydown', (e) => {
+        // Handle Cmd+V / Ctrl+V for paste
+        if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'v') {
+          e.preventDefault();
+          e.stopPropagation();
+          
+          // Find the corresponding paste button and trigger it
+          const inputId = input.id;
+          const pasteBtn = document.querySelector(`button[data-paste="${inputId}"]`);
+          if (pasteBtn) {
+            pasteBtn.click();
+          }
+          return;
+        }
+        
+        // Handle Cmd+A / Ctrl+A for select all
+        if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'a') {
+          e.stopPropagation();
+          input.select();
+          return;
+        }
+        
+        // Allow other shortcuts (Ctrl+C, Ctrl+X, Ctrl+Z) to work normally
+        if ((e.ctrlKey || e.metaKey) && ['c', 'x', 'z'].includes(e.key.toLowerCase())) {
+          e.stopPropagation();
+        }
+      });
+    });
+  });
+
+  function formatAIResponse(text) {
+    if (!text || text === '(empty)') {
+      return '<p style="color: var(--muted); font-style: italic;">No analysis available</p>';
+    }
+    
+    // Convert markdown-style formatting to HTML
+    let formatted = text
+      // Headers
+      .replace(/### (.+)$/gm, '<h3>$1</h3>')
+      .replace(/## (.+)$/gm, '<h2>$1</h2>')
+      .replace(/# (.+)$/gm, '<h1>$1</h1>')
+      // Bold text
+      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+      .replace(/__(.+?)__/g, '<strong>$1</strong>')
+      // Code blocks
+      .replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>')
+      // Inline code
+      .replace(/`([^`]+)`/g, '<code>$1</code>')
+      // Line breaks
+      .replace(/\n\n/g, '</p><p>')
+      .replace(/\n/g, '<br>');
+    
+    // Wrap in paragraph if not already wrapped
+    if (!formatted.includes('<p>') && !formatted.includes('<h1>') && !formatted.includes('<h2>') && !formatted.includes('<h3>')) {
+      formatted = '<p>' + formatted + '</p>';
+    }
+    
+    // Handle bullet points
+    formatted = formatted.replace(/^[\s]*[-•*]\s+(.+)$/gm, '<li>$1</li>');
+    if (formatted.includes('<li>')) {
+      formatted = formatted.replace(/(<li>.*<\/li>)/gs, '<ul>$1</ul>');
+      // Clean up multiple ul tags
+      formatted = formatted.replace(/<\/ul>\s*<ul>/g, '');
+    }
+    
+    // Handle numbered lists
+    formatted = formatted.replace(/^[\s]*\d+\.\s+(.+)$/gm, '<li>$1</li>');
+    if (formatted.includes('<li>') && !formatted.includes('<ul>')) {
+      formatted = formatted.replace(/(<li>.*<\/li>)/gs, '<ol>$1</ol>');
+      formatted = formatted.replace(/<\/ol>\s*<ol>/g, '');
+    }
+    
+    return formatted;
+  }
+
+  function escapeHtml(s){
+    return (s || '').replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+  }
+
+  try { const api = acquireVsCodeApi(); api.postMessage({ type: 'ready' }); } catch {}
+</script>
+
+</body>
+</html>

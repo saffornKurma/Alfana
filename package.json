@@ -1,0 +1,60 @@
+{
+  "name": "alf-log-analyst",
+  "displayName": "ALF Log Analyst",
+  "version": "0.0.4",
+  "description": "Login to ALF or replay cURL, fetch logs, group errors, and explain likely issues with AI.",
+  "publisher": "your-org",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.111.0"
+  },
+  "main": "./dist/extension.js",
+  "activationEvents": [
+    "onView:alfAnalyzer.view",
+    "onCommand:alfAnalyzer.analyzeCurrent",
+    "onCommand:alfAnalyzer.explainWithAI"
+  ],
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "alfAnalyzer",
+          "title": "ALF Analyzer",
+          "icon": "media/icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "alfAnalyzer": [
+        {
+          "id": "alfAnalyzer.view",
+          "name": "Log Analysis",
+          "type": "webview"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "alfAnalyzer.analyzeCurrent",
+        "title": "ALF: Analyze Current Log"
+      },
+      {
+        "command": "alfAnalyzer.explainWithAI",
+        "title": "ALF: Explain with AI"
+      }
+    ]
+  },
+  "categories": [
+    "Other"
+  ],
+  "scripts": {
+    "compile": "tsc -p .",
+    "watch": "tsc -w -p .",
+    "vscode:prepublish": "npm run compile"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "@types/vscode": "^1.106.1",
+    "typescript": "^5.6.0"
+  }
+}
