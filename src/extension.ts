@@ -305,21 +305,135 @@ async function summarizeWithAI(
   const model = (models && models[0]) || null;
   if (!model) return null;
 
-  const grouped = analysis.groups.slice(0, 8).map((g, i) => {
+  // Analyze more groups (up to 20) with much more detail
+  const maxGroups = Math.min(analysis.groups.length, 20);
+  const detailedGroups = analysis.groups.slice(0, maxGroups).map((g, i) => {
     const first = g.samples[0];
-    return `#${i+1} x${g.count} | TopFrame: ${g.topFrame ?? 'n/a'} | Msg: ${(first?.msg || '').slice(0,200)}`;
+    const last = g.samples[g.samples.length - 1];
+    const stack = first?.stack?.slice(0, 5).join('\n    ') || 'No stack trace';
+    const fullMsg = (first?.msg || '').slice(0, 800); // Much longer messages
+    const timestamp = first?.ts || 'Unknown time';
+    const lastTimestamp = last?.ts || timestamp;
+    const service = first?.service || 'Unknown service';
+    const corrId = first?.corrId || 'No correlation ID';
+    
+    // Severity classification hints
+    const msg = fullMsg.toLowerCase();
+    let severityHints = [];
+    
+    if (msg.includes('connection') && (msg.includes('timeout') || msg.includes('refused') || msg.includes('failed'))) {
+      severityHints.push('CONNECTION_ISSUE');
+    }
+    if (msg.includes('nullpointer') || msg.includes('null pointer') || msg.includes('npe')) {
+      severityHints.push('CRITICAL_EXCEPTION');
+    }
+    if (msg.includes('outofmemory') || msg.includes('out of memory') || msg.includes('heap')) {
+      severityHints.push('RESOURCE_CRITICAL');
+    }
+    if (msg.includes('authentication') || msg.includes('unauthorized') || msg.includes('forbidden')) {
+      severityHints.push('SECURITY_ISSUE');
+    }
+    if (msg.includes('database') && (msg.includes('lock') || msg.includes('deadlock') || msg.includes('constraint'))) {
+      severityHints.push('DATA_INTEGRITY');
+    }
+    if (msg.includes('retry') || msg.includes('retrying') || msg.includes('attempt')) {
+      severityHints.push('TRANSIENT_ERROR');
+    }
+    
+    const timeSpan = timestamp !== lastTimestamp ? `First: ${timestamp}, Last: ${lastTimestamp}` : `Time: ${timestamp}`;
+    const severityContext = severityHints.length > 0 ? `\n  Severity Hints: ${severityHints.join(', ')}` : '';
+    
+    return `
+ERROR GROUP #${i+1} (${g.count} occurrences):
+  Service: ${service}
+  ${timeSpan}
+  Correlation: ${corrId}
+  Top Frame: ${g.topFrame || 'n/a'}${severityContext}
+  
+  Message:
+  ${fullMsg}
+  
+  Stack Trace:
+    ${stack}
+  
+  ---`;
   }).join('\n');
+
+  // Enhanced summary statistics
+  const totalErrors = analysis.groups.reduce((sum, g) => sum + g.count, 0);
+  const errorTypes = analysis.groups.reduce((acc, g) => {
+    const level = g.samples[0]?.level || 'UNKNOWN';
+    acc[level] = (acc[level] || 0) + g.count;
+    return acc;
+  }, {} as Record<string, number>);
+
+  const services = Array.from(new Set(
+    analysis.groups.flatMap(g => g.samples.map(s => s.service).filter(Boolean))
+  )).slice(0, 10);
+
+  const errorSummary = `
+ANALYSIS OVERVIEW:
+- Total Error Occurrences: ${totalErrors}
+- Unique Error Patterns: ${analysis.groups.length}
+- Error Levels: ${Object.entries(errorTypes).map(([k,v]) => `${k}: ${v}`).join(', ')}
+- Affected Services: ${services.join(', ') || 'Unknown services'}
+- Most Frequent Error: ${analysis.groups[0]?.count || 0} occurrences
+`;
 
   const messages = [
     vscode.LanguageModelChatMessage.User(
-`You are an ALF log incident analyst. Based on the grouped ALF errors below:
-- Identify likely root cause(s)
-- Point to suspect modules/files if stack frames indicate them
-- Suggest immediate next steps (diagnostics & fix candidates)
-- Be concise and structured
+`You are a senior ALF log incident analyst. Provide a comprehensive analysis with SEVERITY CLASSIFICATION of the following error data.
 
-Grouped:
-${grouped}`)
+${errorSummary}
+
+DETAILED ERROR GROUPS:
+${detailedGroups}
+
+Please provide a structured analysis with SEVERITY CATEGORIES:
+
+## 🚨 CRITICAL SEVERITY (Immediate Action Required)
+- **Exceptions/Crashes**: NullPointers, OutOfMemory, Fatal crashes requiring immediate fixes
+- **Security Issues**: Authentication failures, unauthorized access
+- **Data Integrity**: Database corruption, constraint violations
+- Rate each critical error group with impact and urgency
+
+## ⚠️ HIGH SEVERITY (Fix Soon)
+- **Resource Issues**: Memory leaks, connection pool exhaustion  
+- **Performance Degradation**: Timeouts, slow responses affecting users
+- **Service Disruption**: Partial functionality loss
+- Estimate timeline for resolution
+
+## 🟡 MEDIUM SEVERITY (Monitor & Schedule)
+- **Connection Issues**: Network timeouts, transient connectivity problems
+- **Retryable Errors**: Temporary failures with automatic recovery
+- **Configuration Issues**: Non-critical misconfigurations
+- Determine if these are ongoing or resolved
+
+## 🔍 LOW SEVERITY (Informational/Resolved)
+- **Transient Issues**: Connection problems that later resolved
+- **Expected Errors**: Retry mechanisms working as designed  
+- **Legacy Warnings**: Known issues with workarounds
+- Identify patterns that suggest auto-recovery
+
+## 📊 Temporal Analysis
+- **Ongoing Issues**: Errors still occurring (recent timestamps)
+- **Resolved Issues**: No recent occurrences, likely self-resolved
+- **Escalating Issues**: Increasing frequency over time
+- **Intermittent Issues**: Sporadic patterns
+
+## 🛠️ Action Plan by Priority
+1. **IMMEDIATE** (next 1 hour): Critical fixes
+2. **TODAY** (next 8 hours): High severity issues  
+3. **THIS WEEK** (next 7 days): Medium severity planning
+4. **MONITOR ONLY**: Low severity tracking
+
+For each error group, specify:
+- **Severity Level** (Critical/High/Medium/Low)
+- **Status** (Ongoing/Resolved/Intermittent) 
+- **Action Required** (Fix/Monitor/Investigate)
+- **Timeline** for resolution
+
+Be specific about which errors need immediate fixes vs. those that may have already resolved themselves.`)
   ];
 
   const result = await model.sendRequest(messages, {}, token);
@@ -329,12 +443,37 @@ ${grouped}`)
 
 function renderHeuristicSummary(a: Analysis): string {
   if (!a.groups.length) return 'No ERROR/FATAL groups found.';
-  return a.groups.slice(0, 10).map((g, i) => {
-    const msg = g.samples[0]?.msg || '';
-    return `**#${i + 1} – ${g.count} hits**  
-Top frame: \`${g.topFrame ?? 'n/a'}\`
+  
+  const categorized = a.groups.slice(0, 10).map((g, i) => {
+    const msg = (g.samples[0]?.msg || '').toLowerCase();
+    const first = g.samples[0];
+    const last = g.samples[g.samples.length - 1];
+    
+    // Basic severity classification
+    let severity = '🟡 MEDIUM';
+    if (msg.includes('nullpointer') || msg.includes('outofmemory') || msg.includes('fatal') || first?.level === 'FATAL') {
+      severity = '🚨 CRITICAL';
+    } else if (msg.includes('timeout') || msg.includes('refused') || msg.includes('connection')) {
+      severity = '⚠️ HIGH';
+    } else if (msg.includes('retry') || msg.includes('retrying')) {
+      severity = '🔍 LOW';
+    }
+    
+    // Time analysis
+    const isOngoing = first?.ts === last?.ts || !last?.ts ? 'Status Unknown' : 
+                     'Multiple occurrences - likely ongoing';
+    
+    return `**#${i + 1} – ${g.count} hits** ${severity}  
+Top frame: \`${g.topFrame ?? 'n/a'}\`  
+${isOngoing}
 \`\`\`
-${msg}
+${g.samples[0]?.msg || ''}
 \`\`\``;
-  }).join('\n\n');
+  });
+  
+  const critical = categorized.filter(c => c.includes('🚨 CRITICAL')).length;
+  const high = categorized.filter(c => c.includes('⚠️ HIGH')).length;
+  const summary = `**Severity Overview**: ${critical} Critical, ${high} High Priority\n\n`;
+  
+  return summary + categorized.join('\n\n');
 }

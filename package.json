@@ -19,7 +19,7 @@
       "activitybar": [
         {
           "id": "alfAnalyzer",
-          "title": "ALF Analyzer",
+          "title": "ALFana(ALF Analyzer)",
           "icon": "media/icon.svg"
         }
       ]
