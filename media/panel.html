@@ -5,13 +5,13 @@
 <style>
   :root { 
     --bg: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 100%); 
-    --fg: #e8e8f2; 
+    --fg: #EAEFEF; 
     --muted: #a0a0b5; 
     --border: rgba(255,255,255,0.12); 
     --panel: rgba(255,255,255,0.03); 
     --accent: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); 
     --accent-hover: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); 
-    --error: #ef4444; 
+    --error: #FF9B51; 
     --success: #10b981;
     --card-bg: rgba(255,255,255,0.05);
     --input-bg: rgba(255,255,255,0.08);
@@ -170,8 +170,8 @@
     font-weight: 600; 
     margin-top: 12px; 
     padding: 12px;
-    background: rgba(239, 68, 68, 0.1);
-    border: 1px solid rgba(239, 68, 68, 0.3);
+    background: rgba(255, 155, 81, 0.1);
+    border: 1px solid rgba(255, 155, 81, 0.3);
     border-radius: 8px;
     backdrop-filter: blur(10px);
   }
@@ -248,41 +248,41 @@
     white-space: normal;
   }
   
-  /* Main heading in red, sub-headings in yellow */
+  /* Updated color palette */
   #aiBody h1, #aiBody h2, #aiBody h3 {
-    color: #ffffff !important;
+    color: #EAEFEF !important;
     margin: 20px 0 14px 0;
-    font-weight: 700;
+    font-weight: 600;
     padding: 12px 18px;
     border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.08);
     position: relative;
-    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    -webkit-text-fill-color: #ffffff !important;
+    -webkit-text-fill-color: #EAEFEF !important;
     -webkit-background-clip: initial !important;
   }
   
-  /* Red for main headings */
+  /* Main headings */
   #aiBody h1 {
-    background: linear-gradient(135deg, #991b1b, #7f1d1d) !important;
-    box-shadow: 0 2px 8px rgba(153, 27, 27, 0.2);
+    background: #25343F !important;
+    box-shadow: 0 2px 8px rgba(37, 52, 63, 0.3);
     font-size: 18px;
   }
   
-  /* Yellow for sub-headings */
+  /* Sub-headings */
   #aiBody h2, #aiBody h3 {
-    background: linear-gradient(135deg, #d97706, #b45309) !important;
-    box-shadow: 0 2px 8px rgba(217, 119, 6, 0.2);
+    background: #25343F !important;
+    box-shadow: 0 2px 8px rgba(37, 52, 63, 0.3);
   }
   
   #aiBody h2 { font-size: 17px; }
   #aiBody h3 { font-size: 16px; }
   
   #aiBody h1 *, #aiBody h2 *, #aiBody h3 * {
-    color: #ffffff !important;
+    color: #EAEFEF !important;
   }
   
   #aiBody h1::before, #aiBody h2::before, #aiBody h3::before {
@@ -292,7 +292,7 @@
     left: -100%;
     width: 100%;
     height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent);
     transition: left 0.5s ease;
   }
   
@@ -372,10 +372,10 @@
     text-shadow: none;
   }
   
-  /* Grey inline code styling */
+  /* Updated inline code styling */
   #aiBody code {
     background: rgba(255,255,255,0.1);
-    color: #d1d5db;
+    color: #BFC9D1;
     padding: 3px 6px;
     border-radius: 4px;
     font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
@@ -418,7 +418,7 @@
     background: transparent !important;
     border: none !important;
     padding: 0 !important;
-    color: #e8e8f2 !important;
+    color: #BFC9D1 !important;
     font-weight: 400 !important;
     font-size: 14px !important;
     line-height: 1.4;
@@ -428,7 +428,7 @@
     background: transparent;
     border: none;
     padding: 0;
-    color: #e8e8f2;
+    color: #BFC9D1;
     font-weight: 400;
     letter-spacing: normal;
   }
@@ -557,6 +557,7 @@
     padding: 2px 6px;
     border-radius: 4px;
     font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+    color: #BFC9D1;
   }
 </style>
 </head>

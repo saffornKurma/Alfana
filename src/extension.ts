@@ -382,7 +382,7 @@ ANALYSIS OVERVIEW:
 
   const messages = [
     vscode.LanguageModelChatMessage.User(
-`You are a senior ALF log incident analyst. Provide a comprehensive analysis with SEVERITY CLASSIFICATION of the following error data.
+`You are a senior ALF log incident analyst. Provide a comprehensive analysis with SEVERITY CLASSIFICATION of the following error data.Remember CSC is Code Share not customer service and REV is Revenue,IBM is Interline Billing Module,ACC is Accounting, and so on. Focus on identifying critical issues that require immediate attention, as well as providing insights into potential root causes and recommended actions.
 
 ${errorSummary}
 
